@@ -8,16 +8,9 @@ import stats
 from publish import publish
 from store import r
 import config
-
-# def consensus_test_callback(method, properties, body):
-#     print method
-#     print properties
-#     print body
+from api import start
 
 consume.start_channel(config.RABBIT_EXCHANGE, 'annotations.raw', 'consensus_input', annotation.annotation_callback)
-
-
-# consume.start_channel('farolapp', 'annotations.consensus', 'consensus_test', consensus_test_callback)
 
 
 def get_current_aggreement(fid, attr):
@@ -60,7 +53,7 @@ def check_annotations():
             position_dict = {}
             if position is not None:
                 position_dict['latitude'] = position[0]
-                position['longitude'] = position[1]
+                position_dict['longitude'] = position[1]
             for agreement in agreements:
                 agreement['id'] = fid
                 attribute = agreement['attribute']
@@ -74,7 +67,7 @@ def check_annotations():
                 if value != agreement['value']:
                     if f_uri is not None:
                         agreement['uri'] = f_uri
-                    publish(agreement.update(position_dict))
+                    publish(dict(agreement, **position_dict))
                     set_current_aggreement(fid, attribute, agreement['value'])
                     annotation.delete_temporal(fid)
             try:
@@ -86,7 +79,7 @@ def check_annotations():
                         data = {'id': fid, 'attribute': 'pollution', 'value': str(pollution)}
                         if f_uri is not None:
                             data['uri'] = f_uri
-                        publish(data.update(position_dict))
+                        publish(dict(data, **position_dict))
             except Exception as e:
                 print e.message
 
@@ -96,5 +89,7 @@ def check_annotations():
 monitor = Thread(target=check_annotations)
 monitor.daemon = True
 monitor.start()
+
+start()
 
 monitor.join()

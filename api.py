@@ -33,5 +33,5 @@ def get_tmp():
     return jsonify(lampposts=all_tmp)
 
 
-if __name__ == '__main__':
+def start():
     app.run(host='0.0.0.0', port=config.API_PORT, debug=False, use_reloader=False)
