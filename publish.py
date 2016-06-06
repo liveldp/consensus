@@ -3,11 +3,11 @@ import json
 import pika
 import config
 
-exchange = config.RABBIT_EXCHANGE
+exchange = config.AMQP_EXCHANGE
 
 connection_params = pika.ConnectionParameters(
-    host=config.RABBIT_HOST, port=config.RABBIT_PORT,
-    credentials=pika.credentials.PlainCredentials(config.RABBIT_USER, config.RABBIT_PASS)
+    host=config.AMQP_HOST, port=config.AMQP_PORT,
+    credentials=pika.credentials.PlainCredentials(config.AMQP_USER, config.AMQP_PASS)
 )
 connection = pika.BlockingConnection(connection_params)
 

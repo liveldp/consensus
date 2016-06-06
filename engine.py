@@ -10,7 +10,7 @@ from store import r
 import config
 from api import start
 
-consume.start_channel(config.RABBIT_EXCHANGE, 'annotations.raw', 'consensus_input', annotation.annotation_callback)
+consume.start_channel(config.AMQP_EXCHANGE, 'annotations.raw', 'consensus_input', annotation.annotation_callback)
 
 
 def get_current_aggreement(fid, attr):
