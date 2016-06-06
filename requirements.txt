@@ -1,0 +1,6 @@
+pika
+numpy
+scipy
+Flask
+SPARQLWrapper
+redis

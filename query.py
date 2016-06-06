@@ -1,8 +1,10 @@
 from urlparse import urlparse
-
+import config
 from SPARQLWrapper import SPARQLWrapper, JSON
 
-sparql = SPARQLWrapper("http://138.4.249.224:8890/sparql")
+sparql_url = 'http://{}:{}/sparql'.format(config.SPARQL_HOST, config.SPARQL_PORT)
+
+sparql = SPARQLWrapper(sparql_url)
 
 attr_uri_dict = {
     "color": "color",

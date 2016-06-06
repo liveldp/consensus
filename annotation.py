@@ -26,6 +26,8 @@ def store_annotation(ann_dict):
     fid = ann_dict['id']
     attr = ann_dict['attribute']
     with r.pipeline(transaction=True) as p:
+        if fid.startswith('tmp'):
+            p.sadd('f:tmp', fid)
         p.sadd('f', fid)
         p.hmset('annotations:{}'.format(auuid), ann_dict)
         p.zadd('annotations', ts, auuid)
@@ -35,10 +37,15 @@ def store_annotation(ann_dict):
         f_uri = ann_dict.get('uri', None)
         if f_uri is not None:
             p.set('f:uri:{}'.format(fid), f_uri)
-        if orig_value is None and f_uri is not None:
-            query_value = query(f_uri, attr)
-            if query_value is not None:
-                p.hset('f:orig:{}'.format(fid), attr, str(query_value))
+            if orig_value is None:
+                query_value = query(f_uri, attr)
+                if query_value is not None:
+                    p.hset('f:orig:{}'.format(fid), attr, str(query_value))
+
+        f_lat = ann_dict.get('latitude', None)
+        f_long = ann_dict.get('longitude', None)
+        if f_lat is not None and f_long is not None:
+            p.set('f:pos:{}'.format(fid), (f_lat, f_long))
 
         p.execute()
 
@@ -69,3 +76,17 @@ def get_lamppost_annotations(fid, max=100, offset=0, begin=None, end=None):
                                 start=offset)
 
     return ann_uuids
+
+
+def get_lamppost_position(fid):
+    pos = r.get('f:pos:{}'.format(fid))
+    if pos is not None:
+        pos = eval(pos)
+
+    return pos
+
+
+def delete_temporal(fid):
+    with r.pipeline(transaction=True) as p:
+        p.srem('f:tmp', fid)
+        p.execute()

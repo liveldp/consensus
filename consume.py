@@ -1,11 +1,13 @@
 from threading import Thread
 
 import pika
+import config
 
 
 def __setup_channel(exchange, routing_key, queue, callback):
     connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host='localhost', credentials=pika.credentials.PlainCredentials('farolapp', 'oeg2016')))
+        host=config.RABBIT_HOST, port=config.RABBIT_PORT,
+        credentials=pika.credentials.PlainCredentials(config.RABBIT_USER, config.RABBIT_PASS)))
 
     channel = connection.channel()
     channel.exchange_declare(exchange=exchange,

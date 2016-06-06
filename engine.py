@@ -7,13 +7,16 @@ import calendar
 import stats
 from publish import publish
 from store import r
+import config
 
 # def consensus_test_callback(method, properties, body):
 #     print method
 #     print properties
 #     print body
 
-consume.start_channel('farolapp', 'annotations.raw', 'consensus_input', annotation.annotation_callback)
+consume.start_channel(config.RABBIT_EXCHANGE, 'annotations.raw', 'consensus_input', annotation.annotation_callback)
+
+
 # consume.start_channel('farolapp', 'annotations.consensus', 'consensus_test', consensus_test_callback)
 
 
@@ -53,6 +56,11 @@ def check_annotations():
             agreed_color = None
             agreed_wattage = None
             agreed_cover = None
+            position = annotation.get_lamppost_position(fid)
+            position_dict = {}
+            if position is not None:
+                position_dict['latitude'] = position[0]
+                position['longitude'] = position[1]
             for agreement in agreements:
                 agreement['id'] = fid
                 attribute = agreement['attribute']
@@ -66,8 +74,9 @@ def check_annotations():
                 if value != agreement['value']:
                     if f_uri is not None:
                         agreement['uri'] = f_uri
-                    publish(agreement)
+                    publish(agreement.update(position_dict))
                     set_current_aggreement(fid, attribute, agreement['value'])
+                    annotation.delete_temporal(fid)
             try:
                 if agreed_color and agreed_cover and agreed_wattage:
                     pollution = calculate_pollution(agreed_color, agreed_wattage, agreed_cover)
@@ -77,7 +86,7 @@ def check_annotations():
                         data = {'id': fid, 'attribute': 'pollution', 'value': str(pollution)}
                         if f_uri is not None:
                             data['uri'] = f_uri
-                        publish(data)
+                        publish(data.update(position_dict))
             except Exception as e:
                 print e.message
 

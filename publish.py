@@ -1,11 +1,13 @@
 import json
 
 import pika
+import config
 
-exchange = 'farolapp'
+exchange = config.RABBIT_EXCHANGE
 
 connection_params = pika.ConnectionParameters(
-    host='localhost', port=5672, credentials=pika.credentials.PlainCredentials('farolapp', 'oeg2016')
+    host=config.RABBIT_HOST, port=config.RABBIT_PORT,
+    credentials=pika.credentials.PlainCredentials(config.RABBIT_USER, config.RABBIT_PASS)
 )
 connection = pika.BlockingConnection(connection_params)
 
