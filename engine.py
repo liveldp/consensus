@@ -41,7 +41,8 @@ def calculate_pollution(color, wattage, covered):
 def check_annotations():
     while True:
         known_lampposts = annotation.get_lampposts()
-        print '---------------------- monitoring {} lampposts ----------------------'.format(len(known_lampposts))
+        print '--------------------------------------- monitoring {} lampposts ---------------------------------------'.format(
+            len(known_lampposts))
         for fid in known_lampposts:
             print "> '{}':".format(fid)
             f_uri = r.get('f:uri:{}'.format(fid))

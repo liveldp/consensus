@@ -62,15 +62,15 @@ def check_agreement(fid):
                     mean = stats.trim_mean(int_classes, 0.0)
                 convergence = std / abs(mean) if mean != 0 else std
                 if numeric and convergence < 0.1:
-                    print "AGREEMENT on '{}'".format(mean)
+                    print "AGREEMENT on '{}', values={}".format(mean, numeric_array)
                     yield {'attribute': attr, 'value': str(mean), 'uri': f_uri}
                 elif not numeric and convergence < 0.2:
                     if len(stats.mode(value_array).mode) == 1:
                         mode = stats.mode(value_array).mode[0]
-                        print "AGREEMENT on '{}'".format(mode)
+                        print "AGREEMENT on '{}', values={}".format(mode, attr_values)
                         yield {'attribute': attr, 'value': mode, 'uri': f_uri}
                 else:
-                    print "DISPERSION factor of {}%".format(
-                        convergence * 100)
+                    print "DISPERSION factor of {}%, values={}".format(
+                        convergence * 100, attr_values)
             else:
                 print "NOT ENOUGH annotations"
