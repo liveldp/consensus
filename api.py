@@ -33,5 +33,23 @@ def get_tmp():
     return jsonify(lampposts=all_tmp)
 
 
+@app.route('/objects')
+def get_objects():
+    return jsonify(lampposts=list(r.smembers('f')))
+
+
+@app.route('/objects/<fid>/annotations')
+def get_object_annotations(fid):
+    def extract_annotation(ann):
+        auuid, ts = ann
+        return dict({'timestamp': ts}, **annotation.parse_annotation(auuid))
+
+    if fid in r.smembers('f'):
+        anns = [extract_annotation(ann) for ann in annotation.get_lamppost_annotations(fid)]
+        return jsonify(annotations=anns)
+
+    return make_response('object not found', 404)
+
+
 def start():
     app.run(host='0.0.0.0', port=config.API_PORT, debug=False, use_reloader=False)

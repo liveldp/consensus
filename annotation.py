@@ -30,7 +30,7 @@ def store_annotation(ann_dict):
             p.sadd('f:tmp', fid)
         p.sadd('f', fid)
         p.hmset('annotations:{}'.format(auuid), ann_dict)
-        p.zadd('annotations', ts, auuid)
+        # p.zadd('annotations', ts, auuid)
         p.zadd('f:annotations:{}'.format(fid), ts, auuid)
         p.sadd('f:attrs:{}'.format(fid), attr)
         orig_value = r.hget('f:orig:{}'.format(fid), attr)
@@ -58,14 +58,14 @@ def get_lamppost_attributes(fid):
     return r.smembers('f:attrs:{}'.format(fid))
 
 
-def get_annotations(max=100, offset=0, begin=None, end=None):
-    begin = '-inf' if begin is None else begin
-    end = '+inf' if end is None else end
-
-    ann_uuids = r.zrangebyscore('annotations', begin, end, withscores=True, num=max,
-                                start=offset)
-
-    return ann_uuids
+# def get_annotations(max=100, offset=0, begin=None, end=None):
+#     begin = '-inf' if begin is None else begin
+#     end = '+inf' if end is None else end
+#
+#     ann_uuids = r.zrangebyscore('annotations', begin, end, withscores=True, num=max,
+#                                 start=offset)
+#
+#     return ann_uuids
 
 
 def get_lamppost_annotations(fid, max=100, offset=0, begin=None, end=None):
@@ -78,6 +78,12 @@ def get_lamppost_annotations(fid, max=100, offset=0, begin=None, end=None):
     return ann_uuids
 
 
+def get_attribute_annotations(fid, attr):
+    f_annotations = map(lambda (auuid, ts): parse_annotation(auuid), get_lamppost_annotations(fid))
+    attr_annotations = filter(lambda x: x['attribute'] == attr, f_annotations)
+    return attr_annotations
+
+
 def get_lamppost_position(fid):
     pos = r.get('f:pos:{}'.format(fid))
     if pos is not None:
@@ -87,6 +93,12 @@ def get_lamppost_position(fid):
 
 
 def delete_temporal(fid):
+    fid_keys = r.keys('*{}*'.format(fid))
     with r.pipeline(transaction=True) as p:
         p.srem('f:tmp', fid)
+        p.srem('f', fid)
+        for fk in fid_keys:
+            p.delete(fk)
         p.execute()
+
+
