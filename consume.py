@@ -17,7 +17,11 @@ def __setup_channel(exchange, routing_key, queue, callback):
     channel.queue_bind(exchange=exchange, queue=queue, routing_key=routing_key)
     # channel.basic_qos(prefetch_count=1)
     channel.basic_consume(callback, queue=queue)
-    channel.start_consuming()
+    try:
+        channel.start_consuming()
+    except KeyboardInterrupt:
+        channel.stop_consuming()
+    connection.close()
 
 
 def start_channel(exchange, routing_key, queue, callback):
