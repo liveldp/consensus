@@ -30,7 +30,7 @@ def values_to_int(l, mapping=lmh_map):
 
 
 def check_agreement(fid):
-    time_threshold = calendar.timegm((dt.utcnow() - delta(hours=1)).timetuple())
+    time_threshold = calendar.timegm((dt.utcnow() - delta(days=7)).timetuple())
     anns = annotation.get_lamppost_annotations(fid, begin=time_threshold)
 
     known_attrs = annotation.get_lamppost_attributes(fid)
