@@ -76,14 +76,20 @@ def check_agreement(fid):
                 elif not numeric and convergence < 0.5:
                     lower_class = float(int(mean))
                     upper_class = round(mean)
-                    if not (mean - convergence <= lower_class and mean + convergence >= upper_class):
-                        if len(stats.mode(value_array).mode) == 1:
+		    print lower_class,
+		    print mean,
+                    print upper_class,
+                    if not (mean - convergence < lower_class and mean + convergence > upper_class):
+			print 'pass',
+                        if len(stats.mode(value_array).mode) == 1: 
                             mode = stats.mode(value_array).mode[0]
+			    print mode,
                             # print "AGREEMENT on '{}', values={}".format(mode, attr_values)
                             with r.pipeline(transaction=True) as p:
                                 p.hset('f:cons:{}:{}'.format(fid, attr), 'value', mode)
                                 p.execute()
                             yield {'attribute': attr, 'value': mode, 'uri': f_uri}
+		    print ''
                 else:
                     r.hdel('f:cons:{}:{}'.format(fid, attr), 'value')
                     # print "DISPERSION factor of {}%, values={}".format(
