@@ -41,7 +41,7 @@ def check_agreement(fid):
         n_attr_annotations = len(attr_annotations)
         if n_attr_annotations > 0:
             print "   - '{}' [total={}]".format(attr, n_attr_annotations),
-            if n_attr_annotations >= 3:
+            if n_attr_annotations >= 2:
                 attr_values = map(lambda x: x['value'], attr_annotations)
                 if orig_value is not None:
                     print "[original value={}]:".format(orig_value),
@@ -61,16 +61,28 @@ def check_agreement(fid):
                     std = stats.tstd(np.array(int_classes))
                     mean = stats.trim_mean(int_classes, 0.0)
                 convergence = std / abs(mean) if mean != 0 else std
+                r.hset('f:cons:{}:{}'.format(fid, attr), 'dispersion', convergence)
                 if numeric and convergence < 0.1:
                     print "AGREEMENT on '{}', values={}".format(mean, numeric_array)
+                    with r.pipeline(transaction=True) as p:
+                        p.hset('f:cons:{}:{}'.format(fid, attr), 'value', mean)
+                        p.execute()
                     yield {'attribute': attr, 'value': str(mean), 'uri': f_uri}
                 elif not numeric and convergence < 0.2:
                     if len(stats.mode(value_array).mode) == 1:
                         mode = stats.mode(value_array).mode[0]
                         print "AGREEMENT on '{}', values={}".format(mode, attr_values)
+                        with r.pipeline(transaction=True) as p:
+                            p.hset('f:cons:{}:{}'.format(fid, attr), 'value', mean)
+                            p.execute()
                         yield {'attribute': attr, 'value': mode, 'uri': f_uri}
                 else:
+                    p.hdel('f:cons:{}:{}'.format(fid, attr), 'value')
                     print "DISPERSION factor of {}%, values={}".format(
                         convergence * 100, attr_values)
             else:
                 print "NOT ENOUGH annotations"
+
+
+def get_agreement_status(fid, attr):
+    return r.hgetall('f:cons:{}:{}'.format(fid, attr))

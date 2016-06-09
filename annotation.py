@@ -79,8 +79,8 @@ def get_lamppost_annotations(fid, max=100, offset=0, begin=None, end=None):
 
 
 def get_attribute_annotations(fid, attr):
-    f_annotations = map(lambda (auuid, ts): parse_annotation(auuid), get_lamppost_annotations(fid))
-    attr_annotations = filter(lambda x: x['attribute'] == attr, f_annotations)
+    f_annotations = map(lambda (auuid, ts): (parse_annotation(auuid), ts), get_lamppost_annotations(fid))
+    attr_annotations = filter(lambda (x, ts): x['attribute'] == attr, f_annotations)
     return attr_annotations
 
 
@@ -92,6 +92,10 @@ def get_lamppost_position(fid):
     return pos
 
 
+def get_lampost_uri(fid):
+    return r.get('f:uri:{}'.format(fid))
+
+
 def delete_temporal(fid):
     fid_keys = r.keys('*{}*'.format(fid))
     with r.pipeline(transaction=True) as p:
@@ -100,5 +104,3 @@ def delete_temporal(fid):
         for fk in fid_keys:
             p.delete(fk)
         p.execute()
-
-

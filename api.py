@@ -4,6 +4,7 @@ from flask import Flask, make_response, request, jsonify
 import config
 from store import r
 import annotation
+import stats
 
 app = Flask(__name__)
 
@@ -38,15 +39,52 @@ def get_objects():
     return jsonify(lampposts=list(r.smembers('f')))
 
 
-@app.route('/objects/<fid>/annotations')
-def get_object_annotations(fid):
-    def extract_annotation(ann):
-        auuid, ts = ann
-        return dict({'timestamp': ts}, **annotation.parse_annotation(auuid))
+def extract_annotation(ann):
+    x, ts = ann
+    return dict({'timestamp': ts}, **x)
 
+
+@app.route('/objects/<fid>')
+def get_object(fid):
     if fid in r.smembers('f'):
-        anns = [extract_annotation(ann) for ann in annotation.get_lamppost_annotations(fid)]
-        return jsonify(annotations=anns)
+        object_dict = {'id': fid, 'attributes': {}}
+        for attr in annotation.get_lamppost_attributes(fid):
+            object_dict['attributes'][attr] = stats.get_agreement_status(fid, attr)
+
+        o_uri = annotation.get_lampost_uri(fid)
+        if o_uri is not None:
+            object_dict['uri'] = o_uri
+
+        position = annotation.get_lamppost_position(fid)
+        if position is not None:
+            object_dict.update({'latitude': position[0], 'longitude': position[1]})
+
+        return jsonify(object_dict)
+
+    return make_response('object not found', 404)
+
+
+@app.route('/objects/<fid>/<attr>')
+def get_attribute(fid, attr):
+    if fid in r.smembers('f'):
+        attrs = annotation.get_lamppost_attributes(fid)
+        if attr in attrs:
+
+            object_dict = {'id': fid, 'attribute': attr, 'annotations': []}
+
+            o_uri = annotation.get_lampost_uri(fid)
+            if o_uri is not None:
+                object_dict['uri'] = o_uri
+
+            position = annotation.get_lamppost_position(fid)
+            if position is not None:
+                object_dict.update({'latitude': position[0], 'longitude': position[1]})
+
+            anns = [extract_annotation(ann) for ann in annotation.get_attribute_annotations(fid, attr)]
+            for ann in anns:
+                object_dict['annotations'].append({'value': ann['value'], 'timestamp': ann['timestamp']})
+
+            return jsonify(object_dict)
 
     return make_response('object not found', 404)
 
