@@ -30,6 +30,9 @@ def values_to_int(l, mapping=lmh_map):
             yield v_dict[elm]
 
 
+def reject_outliers(data, m=2):
+    return data[abs(data - np.mean(data)) < m * np.std(data)]
+
 def check_agreement(fid):
     time_threshold = calendar.timegm((dt.utcnow() - delta(days=7)).timetuple())
     anns = annotation.get_lamppost_annotations(fid, begin=time_threshold)
@@ -54,8 +57,9 @@ def check_agreement(fid):
                 numeric = False
                 if attr == 'heading' or attr == 'pitch':
                     numeric_array = np.array(list(map(lambda x: float(x), attr_values)))
+                    numeric_array = reject_outliers(numeric_array)
                     std = stats.tstd(numeric_array)
-                    mean = stats.trim_mean(numeric_array, 0.1)
+                    mean = stats.trim_mean(numeric_array, 0.0)
                     numeric = True
                 else:
                     int_classes = list(values_to_int(attr_values))
