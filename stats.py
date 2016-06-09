@@ -61,7 +61,7 @@ def check_agreement(fid):
                     int_classes = list(values_to_int(attr_values))
                     std = stats.tstd(np.array(int_classes))
                     mean = stats.trim_mean(int_classes, 0.0)
-                convergence = std   # std / abs(mean) if mean != 0 else std
+                convergence = std
                 r.hset('f:cons:{}:{}'.format(fid, attr), 'dispersion', convergence)
                 if numeric and convergence < 0.5:
                     # print "AGREEMENT on '{}', values={}".format(mean, numeric_array)

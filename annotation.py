@@ -68,7 +68,7 @@ def get_lamppost_attributes(fid):
 #     return ann_uuids
 
 
-def get_lamppost_annotations(fid, max=100, offset=0, begin=None, end=None):
+def get_lamppost_annotations(fid, max=1000, offset=0, begin=None, end=None):
     begin = '-inf' if begin is None else begin
     end = '+inf' if end is None else end
 
