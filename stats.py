@@ -40,14 +40,14 @@ def check_agreement(fid):
         attr_annotations = filter(lambda x: x['attribute'] == attr, attr_annotations)
         n_attr_annotations = len(attr_annotations)
         if n_attr_annotations > 0:
-            print "   - '{}' [total={}]".format(attr, n_attr_annotations),
+            # print "   - '{}' [total={}]".format(attr, n_attr_annotations),
             if n_attr_annotations >= 2:
                 attr_values = map(lambda x: x['value'], attr_annotations)
                 if orig_value is not None:
-                    print "[original value={}]:".format(orig_value),
+                    # print "[original value={}]:".format(orig_value),
                     attr_values = attr_values + [orig_value] * 10
-                else:
-                    print ":",
+                # else:
+                #     print ":",
                 f_uri = attr_annotations[0].get('uri', None)
                 value_array = np.array(attr_values)
                 numeric = False
@@ -63,7 +63,7 @@ def check_agreement(fid):
                 convergence = std / abs(mean) if mean != 0 else std
                 r.hset('f:cons:{}:{}'.format(fid, attr), 'dispersion', convergence)
                 if numeric and convergence < 0.1:
-                    print "AGREEMENT on '{}', values={}".format(mean, numeric_array)
+                    # print "AGREEMENT on '{}', values={}".format(mean, numeric_array)
                     with r.pipeline(transaction=True) as p:
                         p.hset('f:cons:{}:{}'.format(fid, attr), 'value', mean)
                         p.execute()
@@ -71,17 +71,17 @@ def check_agreement(fid):
                 elif not numeric and convergence < 0.2:
                     if len(stats.mode(value_array).mode) == 1:
                         mode = stats.mode(value_array).mode[0]
-                        print "AGREEMENT on '{}', values={}".format(mode, attr_values)
+                        # print "AGREEMENT on '{}', values={}".format(mode, attr_values)
                         with r.pipeline(transaction=True) as p:
                             p.hset('f:cons:{}:{}'.format(fid, attr), 'value', mean)
                             p.execute()
                         yield {'attribute': attr, 'value': mode, 'uri': f_uri}
                 else:
                     r.hdel('f:cons:{}:{}'.format(fid, attr), 'value')
-                    print "DISPERSION factor of {}%, values={}".format(
-                        convergence * 100, attr_values)
-            else:
-                print "NOT ENOUGH annotations"
+                    # print "DISPERSION factor of {}%, values={}".format(
+                    #     convergence * 100, attr_values)
+            # else:
+            #     print "NOT ENOUGH annotations"
 
 
 def get_agreement_status(fid, attr):
