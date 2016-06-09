@@ -44,7 +44,7 @@ def check_annotations():
         print '--------------------------------------- monitoring {} lampposts ---------------------------------------'.format(
             len(known_lampposts))
         for fid in known_lampposts:
-            print "> '{}':".format(fid)
+            # print "> '{}':".format(fid)
             f_uri = r.get('f:uri:{}'.format(fid))
             agreements = stats.check_agreement(fid)
             agreed_color = None
