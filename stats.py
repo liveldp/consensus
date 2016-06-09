@@ -77,7 +77,7 @@ def check_agreement(fid):
                             mode = stats.mode(value_array).mode[0]
                             # print "AGREEMENT on '{}', values={}".format(mode, attr_values)
                             with r.pipeline(transaction=True) as p:
-                                p.hset('f:cons:{}:{}'.format(fid, attr), 'value', mean)
+                                p.hset('f:cons:{}:{}'.format(fid, attr), 'value', mode)
                                 p.execute()
                             yield {'attribute': attr, 'value': mode, 'uri': f_uri}
                 else:
