@@ -1,5 +1,6 @@
 from scipy import stats
 import numpy as np
+import math
 import annotation
 import calendar
 from datetime import datetime as dt, timedelta as delta
@@ -60,22 +61,25 @@ def check_agreement(fid):
                     int_classes = list(values_to_int(attr_values))
                     std = stats.tstd(np.array(int_classes))
                     mean = stats.trim_mean(int_classes, 0.0)
-                convergence = std / abs(mean) if mean != 0 else std
+                convergence = std   # std / abs(mean) if mean != 0 else std
                 r.hset('f:cons:{}:{}'.format(fid, attr), 'dispersion', convergence)
-                if numeric and convergence < 0.1:
+                if numeric and convergence < 0.5:
                     # print "AGREEMENT on '{}', values={}".format(mean, numeric_array)
                     with r.pipeline(transaction=True) as p:
                         p.hset('f:cons:{}:{}'.format(fid, attr), 'value', mean)
                         p.execute()
                     yield {'attribute': attr, 'value': str(mean), 'uri': f_uri}
-                elif not numeric and convergence < 0.2:
-                    if len(stats.mode(value_array).mode) == 1:
-                        mode = stats.mode(value_array).mode[0]
-                        # print "AGREEMENT on '{}', values={}".format(mode, attr_values)
-                        with r.pipeline(transaction=True) as p:
-                            p.hset('f:cons:{}:{}'.format(fid, attr), 'value', mean)
-                            p.execute()
-                        yield {'attribute': attr, 'value': mode, 'uri': f_uri}
+                elif not numeric and convergence < 0.5:
+                    lower_class = float(int(mean))
+                    upper_class = round(mean)
+                    if not (mean - convergence <= lower_class and mean + convergence >= upper_class):
+                        if len(stats.mode(value_array).mode) == 1:
+                            mode = stats.mode(value_array).mode[0]
+                            # print "AGREEMENT on '{}', values={}".format(mode, attr_values)
+                            with r.pipeline(transaction=True) as p:
+                                p.hset('f:cons:{}:{}'.format(fid, attr), 'value', mean)
+                                p.execute()
+                            yield {'attribute': attr, 'value': mode, 'uri': f_uri}
                 else:
                     r.hdel('f:cons:{}:{}'.format(fid, attr), 'value')
                     # print "DISPERSION factor of {}%, values={}".format(
