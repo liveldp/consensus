@@ -67,7 +67,7 @@ def check_agreement(fid):
                     mean = stats.trim_mean(int_classes, 0.0)
                 convergence = std
                 r.hset('f:cons:{}:{}'.format(fid, attr), 'dispersion', convergence)
-                if numeric and convergence < 0.5:
+                if numeric and convergence < 1.0:
                     # print "AGREEMENT on '{}', values={}".format(mean, numeric_array)
                     with r.pipeline(transaction=True) as p:
                         p.hset('f:cons:{}:{}'.format(fid, attr), 'value', mean)
