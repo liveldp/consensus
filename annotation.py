@@ -97,10 +97,11 @@ def get_lampost_uri(fid):
 
 
 def delete_temporal(fid):
-    fid_keys = r.keys('*{}*'.format(fid))
-    with r.pipeline(transaction=True) as p:
-        p.srem('f:tmp', fid)
-        p.srem('f', fid)
-        for fk in fid_keys:
-            p.delete(fk)
-        p.execute()
+    if 'tmp' in fid:
+        fid_keys = r.keys('*{}*'.format(fid))
+        with r.pipeline(transaction=True) as p:
+            p.srem('f:tmp', fid)
+            p.srem('f', fid)
+            for fk in fid_keys:
+                p.delete(fk)
+            p.execute()
