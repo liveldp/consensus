@@ -77,7 +77,7 @@ def check_agreement(fid):
                             p.execute()
                         yield {'attribute': attr, 'value': mode, 'uri': f_uri}
                 else:
-                    p.hdel('f:cons:{}:{}'.format(fid, attr), 'value')
+                    r.hdel('f:cons:{}:{}'.format(fid, attr), 'value')
                     print "DISPERSION factor of {}%, values={}".format(
                         convergence * 100, attr_values)
             else:
